@@ -1,0 +1,3 @@
+useDynLib(SMMA)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
