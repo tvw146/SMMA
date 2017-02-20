@@ -1,3 +1,5 @@
 useDynLib(SMMA)
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
+S3method(print, SMMA)
+S3method(predict, SMMA)

@@ -36,11 +36,11 @@ const arma::cube Z(vecY.begin(), YDim[0], YDim[1], YDim[2], false);//whybrackets
 
 //declare some global variables
 int ascent, ascentmax,
-bt, btenter = 0, btiter = 0,
-endmodelno = nlambda,
-n1 = Phi1.n_rows, n2 = Phi2.n_rows, n3 = Phi3.n_rows, Nog = Z.n_slices, ng = n1 * n2 * n3,// n = Nog * ng,
-p1 = Phi1.n_cols, p2 = Phi2.n_cols, p3 = Phi3.n_cols, p = p1 * p2 * p3,
-Stopconv = 0, Stopmaxiter = 0, Stopbt = 0;
+    bt, btenter = 0, btiter = 0,
+    endmodelno = nlambda,
+    n1 = Phi1.n_rows, n2 = Phi2.n_rows, n3 = Phi3.n_rows, Nog = Z.n_slices, ng = n1 * n2 * n3,// n = Nog * ng,
+    p1 = Phi1.n_cols, p2 = Phi2.n_cols, p3 = Phi3.n_cols, p = p1 * p2 * p3,
+    Stopconv = 0, Stopmaxiter = 0, Stopbt = 0;
 
 double alphamax, ascad = 3.7,
        delta,
@@ -53,20 +53,20 @@ double alphamax, ascad = 3.7,
        val;
 
 arma::vec df(nlambda),
-eig1, eig2, eig3,
-Iter(nlambda), Loss(maxiter + 1), Pen(maxiter + 1),
-obj(maxiter + 1),
-Stops(3),
-wX;
+          eig1, eig2, eig3,
+          Iter(nlambda), Loss(maxiter + 1), Pen(maxiter + 1),
+          obj(maxiter + 1),
+          Stops(3),
+          wX;
 
 arma::mat absBeta(p1, p2 * p3),
-Beta(p1, p2 * p3), Betaprev(p1, p2 * p3), Betas(p, nlambda), BT(nlambda, maxiter + 1),
-dpen(p1, p2 * p3),
-Gamma(p1, p2 * p3), GradlossX(p1, p2 * p3), GradlossX2(p1, p2 * p3),
-Obj(maxiter + 1, nlambda),
-Phi1tPhi1, Phi2tPhi2, Phi3tPhi3, PhitPhiBeta, PhitPhiX, pospart(p1, p2 * p3), Prop(p1, p2 * p3), PhiBeta(n1, n2 * n3), PhiProp(n1, n2 * n3), PhiX(n1, n2 * n3),
-wGamma(p1, p2 * p3),
-X(p1, p2 * p3);
+          Beta(p1, p2 * p3), Betaprev(p1, p2 * p3), Betas(p, nlambda), BT(nlambda, maxiter + 1),
+          dpen(p1, p2 * p3),
+          Gamma(p1, p2 * p3), GradlossX(p1, p2 * p3), GradlossX2(p1, p2 * p3),
+          Obj(maxiter + 1, nlambda),
+          Phi1tPhi1, Phi2tPhi2, Phi3tPhi3, PhitPhiBeta, PhitPhiX, pospart(p1, p2 * p3), Prop(p1, p2 * p3), PhiBeta(n1, n2 * n3), PhiProp(n1, n2 * n3), PhiX(n1, n2 * n3),
+          wGamma(p1, p2 * p3),
+          X(p1, p2 * p3);
 
 arma::cube PhitZ(p1, p2 * p3, Nog), W(Nog, maxiter + 1, nlambda);
 
@@ -396,6 +396,8 @@ break;
 
 }//end proximal loop
 
+df(j) = p - accu((Beta == 0));
+  
 }
 
 //Stop program if maximum number of backtracking steps or maxiter is reached
@@ -417,6 +419,7 @@ btenter = accu((BT > -1));
 btiter = accu((BT > 0) % BT);
 
 output = Rcpp::List::create(Rcpp::Named("Beta") = Betas,
+                            Rcpp::Named("df") = df,
                             Rcpp::Named("btenter") = btenter,
                             Rcpp::Named("btiter") = btiter,
                             Rcpp::Named("Obj") = Obj,

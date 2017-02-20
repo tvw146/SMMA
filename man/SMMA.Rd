@@ -2,22 +2,23 @@
 % Please edit documentation in R/SMMA.R
 \name{SMMA}
 \alias{SMMA}
+\alias{pga}
 \alias{softmaximin}
 \title{Maximin Estimation for Large Scale Array Data with Known Groups}
 \usage{
 softmaximin(X, 
             Y, 
             penalty = c("lasso", "scad"),
-            nlambda = 100,
+            nlambda = 30,
             lambda.min.ratio = 1e-04,
             lambda = NULL,
             penalty.factor = NULL,
-            reltol = 1e-07,
+            reltol = 1e-05,
             maxiter = 15000,
             steps = 1,
             btmax = 100,
             zeta = 2, 
-            c = 0.001
+            c = 0.001,
             Delta0 = 1,
             nu = 1,
             alg = c("npg", "mfista"))
@@ -78,29 +79,37 @@ and \code{iter_mat} is a vector containing the  number of  iterations for each \
 and  \code{iter} is total number of iterations i.e. \code{sum(Iter)}.}
 }
 \description{
-Efficient design matrix free procedure for soving the soft maximin problem for 
+Efficient design matrix free procedure for estimating maximin effects by solving a soft maximin problem  for 
 large scale penalized  2 or 3-dimensional generalized linear array models. Currently the LASSO penalty 
 and the SCAD penalty are both implemented, see  \cite{Lund et al., 2017}.
 }
 \details{
-We consider the maximin effects estimator for array data with a known fixed group structure 
+We consider the maximin effects estimator from \cite{Meinshausen and Bhulmann, 2015} for array data with a known fixed group structure 
 and tensor structured design matrix. 
 
 For  \eqn{g \in \{1,\ldots,G\}} let \eqn{n} be the number of observations in each group. 
-With  \eqn{Y_g:=(y_{i},\ldots,y_{i_{n}})^\top}  the   group-specific $n_1\times \cdots \times n_d$ response array  
+With  \eqn{Y_g:=(y_{i},\ldots,y_{i_{n}})^\top}  the   group-specific \eqn{n_1\times \cdots \times n_d} response array  
 and \eqn{X :=(x_{i}\mid\ldots\mid x_{i_{n}})^\top} a \eqn{n\times p} design matrix, with tensor structure
- \deqn{X = \bigotimes_{i=1}^d X_i,} where \eqn{X_1,X_2,\ldots} are the marginal \eqn{n_i\times p_i} design matrices (Kronecker components). 
+ \deqn{X = \bigotimes_{i=1}^d X_i,} 
+ where for \eqn{d =2,3}, \eqn{X_1,\ldots, X_d} are the marginal \eqn{n_i\times p_i} design matrices (Kronecker components). 
  
-We use the generalized linear array model (GLAM) framework to write the model equation as
+We use the array model framework to write the model equation as
  \deqn{Y_g = \rho(X_d,\rho(X_{d-1},\ldots,\rho(X_1,B_g))) + E,}
-where \eqn{\rho} is the so called rotated \eqn{H}-transfrom, \eqn{B_g} is the   random parameter array
- and \eqn{E} some additive noise that is uncorrelated with \eqn{X}. See \cite{Lund et al., 2017} for more details.
+where \eqn{\rho} is the so called rotated \eqn{H}-transfrom, \eqn{B_g} for each \eqn{g} is a random \eqn{p_1\times\cdots\times p_d} parameter array
+ and \eqn{E}  is  \eqn{n_1\times \cdots \times n_d} error array uncorrelated with \eqn{X}. See \cite{Lund et al., 2017} for more details.
+ 
+In the know groups setup, with \eqn{y_g:=vec(Y_g)}, the empirical explained variance is
+\deqn{\hat V_g(\beta):=\frac{1}{n_g}(2\beta^\top X_g^\top y_g-\beta^\top X^\top_gX_g\beta)}
+To estimate  regularized maximin effects for known groups it is suggested in
+ \cite{Meinshausen and Bhulmann, 2015} to maximize the (penalized) minimal empirical explained variance by solving
+\deqn{  \min_{\beta}\max_{g}-\hat V_g(\beta)+\lambda J(\beta)}
+where \eqn{J} is a penalty function and  \eqn{\lambda\geq0} a penalty parameter.
         
-Using only the marginal matrices \eqn{X_1,X_2,\ldots} and with \eqn{J} a penalty function, the function \code{glamlasso} 
-solves the penalized softmaximin problem 
-\deqn{\min_{\theta} \sum_{g=1}^G \exp{-\zeta \hat V_g(\beta)} + \lambda J (\beta),} 
-in this setup for a sequence of penalty parameters \eqn{\lambda>0}. The underlying algorithm is based on an  
-proximal gradient based loop. We note that if \eqn{J} is not  convex, as with the SCAD penalty,
+Using only the marginal matrices \eqn{X_1,X_2,\ldots}, the function \code{softmaximin} 
+solves an approximation to the problem above, using a softmax type loss function, given as
+\deqn{\min_{\beta}\sum_{g=1}^G \exp(-\zeta \hat V_g(\beta)) + \lambda J (\beta),} 
+for a sequence of penalty parameters \eqn{\lambda>0}. The underlying algorithm is based on an  
+proximal gradient method. We note that if \eqn{J} is not  convex, as with the SCAD penalty,
 we use the multiple step adaptive lasso procedure to loop over the inner proximal algorithm, see \cite{Lund et al., 2017} for more details.
 }
 \examples{
@@ -109,23 +118,29 @@ we use the multiple step adaptive lasso procedure to loop over the inner proxima
 n1 <- 65; n2 <- 26; n3 <- 13; p1 <- 13; p2 <- 5; p3 <- 4
 
 ##marginal design matrices (Kronecker components)
-X1 <- matrix(rnorm(n1 * p1), n1, p1) 
-X2 <- matrix(rnorm(n2 * p2), n2, p2) 
-X3 <- matrix(rnorm(n3 * p3), n3, p3) 
+X1 <- matrix(rnorm(n1 * p1, 0, 0.5), n1, p1) 
+X2 <- matrix(rnorm(n2 * p2, 0, 0.5), n2, p2) 
+X3 <- matrix(rnorm(n3 * p3, 0, 0.5), n3, p3) 
 X <- list(X1, X2, X3)
 
-##gaussian example 
-Beta <- array(rnorm(p1 * p2 * p3) * rbinom(p1 * p2 * p3, 1, 0.1), c(p1 , p2, p3))
-mu <- RH(X3, RH(X2, RH(X1, Beta)))
-Y <- array(rnorm(n1 * n2 * n3, mu), dim = c(n1, n2, n3))
+component <- rbinom(p1 * p2 * p3, 1, 0.1) 
+Beta1 <- array(rnorm(p1 * p2 * p3, 0, .1) + component, c(p1 , p2, p3))
+Beta2 <- array(rnorm(p1 * p2 * p3, 0, .1) + component, c(p1 , p2, p3))
+mu1 <- RH(X3, RH(X2, RH(X1, Beta1)))
+mu2 <- RH(X3, RH(X2, RH(X1, Beta2)))
+Y1 <- array(rnorm(n1 * n2 * n3, mu1), dim = c(n1, n2, n3))
+Y2 <- array(rnorm(n1 * n2 * n3, mu2), dim = c(n1, n2, n3))
 
-fit <- softmaximin(X, Y, family = "gaussian", penalty = "lasso", iwls = "exact")
+Y <- array(NA, c(dim(Y1), 2))
+Y[,,, 1] <- Y1; Y[,,, 2] <- Y2;
+
+fit <- softmaximin(X, Y, penalty = "lasso", alg = "npg")
 Betafit <- fit$coef
 
-modelno <- length(fit$lambda)
-m <- min(Betafit[ , modelno], c(Beta))
-M <- max(Betafit[ , modelno], c(Beta))
-plot(c(Beta), type="l", ylim = c(m, M))
+modelno <- 15
+m <- min(Betafit[ , modelno], c(component))
+M <- max(Betafit[ , modelno], c(component))
+plot(c(component), type="l", ylim = c(m, M))
 lines(Betafit[ , modelno], col = "red")
 }
 }
