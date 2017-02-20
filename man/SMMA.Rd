@@ -79,7 +79,7 @@ and \code{iter_mat} is a vector containing the  number of  iterations for each \
 and  \code{iter} is total number of iterations i.e. \code{sum(Iter)}.}
 }
 \description{
-Efficient design matrix free procedure for estimating maximin effects by solving a soft maximin problem  for 
+Efficient design matrix free procedure for estimating maximin effects by solving a (soft) maximin problem  for 
 large scale penalized  2 or 3-dimensional generalized linear array models. Currently the LASSO penalty 
 and the SCAD penalty are both implemented, see  \cite{Lund et al., 2017}.
 }

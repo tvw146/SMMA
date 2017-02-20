@@ -5,7 +5,7 @@ Version: 1.0
 Date: 2017-02-04
 Author: Adam Lund
 Maintainer: Adam Lund <adam.lund@math.ku.dk>
-Description: Efficient design matrix free procedure for solving a soft maximin problem for  large scale array models. Currently Lasso and SCAD penalized estimation is implemented.
+Description: Efficient design matrix free procedure for solving a Soft MaxiMin problem for  large scale Array models. Currently Lasso and SCAD penalized estimation is implemented.
 License: GPL-3
 Imports: Rcpp (>= 0.11.2)
 LinkingTo: Rcpp, RcppArmadillo
