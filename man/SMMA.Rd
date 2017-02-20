@@ -98,8 +98,8 @@ We use the array model framework to write the model equation as
 where \eqn{\rho} is the so called rotated \eqn{H}-transfrom, \eqn{B_g} for each \eqn{g} is a random \eqn{p_1\times\cdots\times p_d} parameter array
  and \eqn{E}  is  \eqn{n_1\times \cdots \times n_d} error array uncorrelated with \eqn{X}. See \cite{Lund et al., 2017} for more details.
  
-In the know groups setup, with \eqn{y_g:=vec(Y_g)}, the empirical explained variance is
-\deqn{\hat V_g(\beta):=\frac{1}{n_g}(2\beta^\top X_g^\top y_g-\beta^\top X^\top_gX_g\beta)}
+In this setup, with \eqn{y_g:=vec(Y_g)}, the empirical explained variance is
+\deqn{\hat V_g(\beta):=\frac{1}{n}(2\beta^\top X^\top y_g-\beta^\top X^\top X\beta)}
 To estimate  regularized maximin effects for known groups it is suggested in
  \cite{Meinshausen and Bhulmann, 2015} to maximize the (penalized) minimal empirical explained variance by solving
 \deqn{  \min_{\beta}\max_{g}-\hat V_g(\beta)+\lambda J(\beta)}

@@ -1,2 +1,168 @@
 library(msgl)
 ?msgl
+library(githubinstall)
+githubinstall("SMMA")
+library(devtools)#
+install_github("hadley/dplyr")
+library(devtools)#
+install_github("tvw146/SMMA")#
+library(SMMA)
+?SMMA
+load("/Users/adamlund/Documents/KU/Phd/Project/Computer/StaticModel/Maximin/Y.rda")#
+Ytr <- Y#
+# load(file = "~/Documents/KU/Phd/Project/Computer/StaticModel/Maximin/resArrayUnaligned.rda")#
+# Ytr <- res.a[5:21,5:21,,]#
+#
+rm(Y)#
+G <- dim(Ytr)[4]  #
+N1 <- dim(Ytr)[1]#
+N2 <- dim(Ytr)[2]#
+N3 <- dim(Ytr)[3]#
+#
+######standardize Ytr#
+Y <- Ytr * 0#
+for(i in 1:G){	#
+#
+Y[, , , i] <- Ytr[, , , i] / array(apply(Ytr[, , 1:200, i], c(1, 2), sd), c(N1, N2, N3))#
+#
+}#
+#
+deg1 <- 2 #
+deg2 <- 2 #
+deg3 <- 3 #
+degs <- 3 #
+#
+p1 <- 8#max(ceiling(N1 / 3), 4) #K=#funcs/knots in basis for 1.-axis#
+p2 <- 8#max(ceiling(N2 / 3), 4) #L=#funcs/knots in basis for 2.-axis#
+p3 <- max(ceiling(N3 / 5), 4) #
+#
+X1 <- MortSmooth_bbase(x = 1:N1, xl = 1, xr = N1, ndx = p1 - deg1, deg = deg1)#
+X2 <- MortSmooth_bbase(x = 1:N2, xl = 1, xr = N2, ndx = p2 - deg2, deg = deg2)#
+X3 <- MortSmooth_bbase(x = 1:N3, xl = 1, xr = N3, ndx = p3 - deg3, deg = deg3)#
+#
+##rotate data to get efficient computations#
+Ytilde <- NULL#
+for(i in 1:G){Ytilde <- abind(Ytilde, aperm(Y[, , , i], c(3, 2, 1)), along = 4)}#
+X <- list(X3, X2, X1)#
+#
+nlambda <- 10#
+resp <- Ytilde[,,,1:2]#
+#
+system.time(out <- softmaximin(X, #
+                           resp, #
+                           penalty = "lasso",#
+                           nlambda = nlambda,#
+                           lambda.min.ratio = 0.001, #
+                           reltol = 1e-05,#
+                           maxiter = 300,#
+                           btmax = 10, #
+                           nu = 1,#
+                           alg = "npg"#
+                           ))#
+#
+par(mfrow = c(2, 1))#
+modelno <- length(out$lambda)#
+B <- aperm(array(out$coef[, modelno], c(p3, p2, p1)), c(3, 2, 1))#
+plot(c(B))#
+#
+S <- RH(X3, RH(X2, RH(X1, B)))#
+plot(S[1,1,], ylim = range(S))#
+for(i in 1:N1){for(j in 1:N2){lines(S[i,j,])}}
+library(MortalitySmooth)#
+library(animation)#
+library(glamlasso)#
+library(plot3D)#
+library(abind)
+load("/Users/adamlund/Documents/KU/Phd/Project/Computer/StaticModel/Maximin/Y.rda")#
+Ytr <- Y#
+# load(file = "~/Documents/KU/Phd/Project/Computer/StaticModel/Maximin/resArrayUnaligned.rda")#
+# Ytr <- res.a[5:21,5:21,,]#
+#
+rm(Y)#
+G <- dim(Ytr)[4]  #
+N1 <- dim(Ytr)[1]#
+N2 <- dim(Ytr)[2]#
+N3 <- dim(Ytr)[3]#
+#
+######standardize Ytr#
+Y <- Ytr * 0#
+for(i in 1:G){	#
+#
+Y[, , , i] <- Ytr[, , , i] / array(apply(Ytr[, , 1:200, i], c(1, 2), sd), c(N1, N2, N3))#
+#
+}#
+#
+deg1 <- 2 #
+deg2 <- 2 #
+deg3 <- 3 #
+degs <- 3 #
+#
+p1 <- 8#max(ceiling(N1 / 3), 4) #K=#funcs/knots in basis for 1.-axis#
+p2 <- 8#max(ceiling(N2 / 3), 4) #L=#funcs/knots in basis for 2.-axis#
+p3 <- max(ceiling(N3 / 5), 4) #
+#
+X1 <- MortSmooth_bbase(x = 1:N1, xl = 1, xr = N1, ndx = p1 - deg1, deg = deg1)#
+X2 <- MortSmooth_bbase(x = 1:N2, xl = 1, xr = N2, ndx = p2 - deg2, deg = deg2)#
+X3 <- MortSmooth_bbase(x = 1:N3, xl = 1, xr = N3, ndx = p3 - deg3, deg = deg3)#
+#
+##rotate data to get efficient computations#
+Ytilde <- NULL#
+for(i in 1:G){Ytilde <- abind(Ytilde, aperm(Y[, , , i], c(3, 2, 1)), along = 4)}#
+X <- list(X3, X2, X1)#
+#
+nlambda <- 10#
+resp <- Ytilde[,,,1:2]#
+#
+system.time(out <- softmaximin(X, #
+                           resp, #
+                           penalty = "lasso",#
+                           nlambda = nlambda,#
+                           lambda.min.ratio = 0.001, #
+                           reltol = 1e-05,#
+                           maxiter = 300,#
+                           btmax = 10, #
+                           nu = 1,#
+                           alg = "npg"#
+                           ))#
+#
+par(mfrow = c(2, 1))#
+modelno <- length(out$lambda)#
+B <- aperm(array(out$coef[, modelno], c(p3, p2, p1)), c(3, 2, 1))#
+plot(c(B))#
+#
+S <- RH(X3, RH(X2, RH(X1, B)))#
+plot(S[1,1,], ylim = range(S))#
+for(i in 1:N1){for(j in 1:N2){lines(S[i,j,])}}
+system.time(out <- softmaximin(X, #
+                           resp, #
+                           penalty = "lasso",#
+                           nlambda = nlambda,#
+                           lambda.min.ratio = 0.001, #
+                           reltol = 1e-05,#
+                           maxiter = 300,#
+                           btmax = 10, #
+                           nu = 1,#
+                           alg = "mfista"#
+                           ))
+system.time(out <- softmaximin(X, #
+                           resp, #
+                           penalty = "lasso",#
+                           nlambda = nlambda,#
+                           lambda.min.ratio = 0.001, #
+                           reltol = 1e-05,#
+                           maxiter = 300,#
+                           btmax = 10, #
+                           nu = 0.1,#
+                           alg = "mfista"#
+                           ))
+system.time(out <- softmaximin(X, #
+                           resp, #
+                           penalty = "lasso",#
+                           nlambda = nlambda,#
+                           lambda.min.ratio = 0.001, #
+                           reltol = 1e-05,#
+                           maxiter = 300,#
+                           btmax = 10, #
+                           nu = 0,#
+                           alg = "mfista"#
+                           ))
