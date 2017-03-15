@@ -27,7 +27,8 @@ Rcpp::List pga(arma::mat Phi1, arma::mat Phi2, arma::mat Phi3,
                int btmax,
                double Delta0,
                double nu,
-               int alg){
+               int alg,
+               int ll){
 
 Rcpp::List output;
 Rcpp::NumericVector vecY(resp);//??why thevecY??
@@ -57,7 +58,7 @@ arma::vec df(nlambda),
           Iter(nlambda), Loss(maxiter + 1), Pen(maxiter + 1),
           obj(maxiter + 1),
           Stops(3),
-          wX;
+          eevX;
 
 arma::mat absBeta(p1, p2 * p3),
           Beta(p1, p2 * p3), Betaprev(p1, p2 * p3), Betas(p, nlambda), BT(nlambda, maxiter + 1),
@@ -112,13 +113,24 @@ Beta = Betaprev;
 PhiBeta = RHmat(Phi3, RHmat(Phi2, RHmat(Phi1, Beta, p2, p3), p3, n1), n1, n2);
 PhitPhiBeta = RHmat(Phi3tPhi3, RHmat(Phi2tPhi2, RHmat(Phi1tPhi1, Beta, p2, p3), p3, p1), p1, p2);
 
-lossBeta = softmaxloss(eev(PhiBeta, Z, ng), zeta);
+lossBeta = softmaxloss(eev(PhiBeta, Z, ng), zeta, ll);
 
 ////make lambda sequence
 if(makelamb == 1){
 
 arma::mat Ze = zeros<mat>(n1, n2 * n3);
-arma::mat absgradzeroall = abs(gradloss(PhitZ, PhitPhiBeta, exp(-zeta * eev(Ze, Z, ng)), ng, zeta));
+arma::mat absgradzeroall(p1, p2 * p2);  
+
+if(ll == 1){
+  
+absgradzeroall = abs(gradloss(PhitZ, PhitPhiBeta, eev(PhiBeta, Z, ng), ng, zeta, ll) / Nog);
+
+}else{
+
+absgradzeroall = abs(gradloss(PhitZ, PhitPhiBeta, eev(PhiBeta, Z, ng), ng, zeta, ll));
+
+}
+  
 
 arma::mat absgradzeropencoef = absgradzeroall % (penaltyfactor > 0);
 arma::mat penaltyfactorpencoef = (penaltyfactor == 0) * 1 + penaltyfactor;
@@ -149,7 +161,7 @@ for (int s = 0; s < steps; s++){
 
 if(s == 0){
 
-if(penalty != "lasso"){wGamma =Gamma / lambda(j);}else{wGamma = Gamma;}
+if(penalty != "lasso"){wGamma = Gamma / lambda(j);}else{wGamma = Gamma;}
 
 }else{
 
@@ -184,15 +196,19 @@ BT(j, k) = 1; //force initial backtracking (if deltamin < delta)
 X = Beta + (k - 2) / (k + 1) * (Beta - Betaprev);
 
 PhiX = RHmat(Phi3, RHmat(Phi2, RHmat(Phi1, X, p2, p3), p3, n1), n1, n2);
-wX = exp(-zeta * eev(PhiX, Z, ng));
+eevX = eev(PhiX, Z, ng);
+//wX = exp(-zeta * eev(PhiX, Z, ng));
 
 PhitPhiX = RHmat(Phi3tPhi3, RHmat(Phi2tPhi2, RHmat(Phi1tPhi1, X, p2, p3), p3, p1), p1, p2);
-GradlossX = gradloss(PhitZ, PhitPhiX, wX, ng, zeta);
+GradlossX = gradloss(PhitZ, PhitPhiX, eevX, ng, zeta, ll);
+
+//if(ll == 1){GradlossX = GradlossX / accu(wX);}
 
 ////check if proximal backtracking occurred last iteration
 if(BT(j, k - 1) > 0){bt = 1;}else{bt = 0;}
 
-lossX = accu(wX);
+lossX = softmaxloss(eevX, zeta, ll);
+//lossX = accu(wX);
 
 ////proximal backtracking from chen2016
 BT(j, k) = 0;
@@ -201,7 +217,7 @@ while (BT(j, k) < btmax){
 
 Prop = prox_l1(X - delta * GradlossX, delta * wGamma);
 PhiProp = RHmat(Phi3, RHmat(Phi2, RHmat(Phi1, Prop, p2, p3), p3, n1), n1, n2);
-lossProp = softmaxloss(eev(PhiProp, Z, ng), zeta);
+lossProp = softmaxloss(eev(PhiProp, Z, ng), zeta, ll);
 
 val = as_scalar(max(obj(span(0, k - 1))) - c / (2 * delta) * sum_square(Prop - Betaprev));
 penProp = l1penalty(wGamma, Prop);
@@ -285,16 +301,18 @@ tk = 1;
 }else{//if not the first iteration
 
 PhiX = RHmat(Phi3, RHmat(Phi2, RHmat(Phi1, X, p2, p3), p3, n1), n1, n2);
-wX = exp(-zeta * eev(PhiX, Z, ng));
+//wX = exp(-zeta * eev(PhiX, Z, ng));
+eevX = eev(PhiX, Z, ng);
 PhitPhiX = RHmat(Phi3tPhi3, RHmat(Phi2tPhi2, RHmat(Phi1tPhi1, X, p2, p3), p3, p1), p1, p2);
-GradlossX = gradloss(PhitZ, PhitPhiX, wX, ng, zeta);
+GradlossX = gradloss(PhitZ, PhitPhiX, eevX, ng, zeta, ll);
 
 ////check if backtracking occurred last iteration
 if(BT(j, k - 1) > 0){bt = 1;}else{bt = 0;}
 
 if(bt == 1 || nu == 0){// if backtrack
-
-lossX = accu(wX);
+  
+  lossX = softmaxloss(eevX, zeta, ll);
+//lossX = accu(wX);
 penX = l1penalty(wGamma, X);
 BT(j, k) = 0;
 
@@ -302,12 +320,12 @@ while (BT(j, k) < btmax){//line search
 
 Prop = prox_l1(X - delta * GradlossX, delta * wGamma);
 PhiProp = RHmat(Phi3, RHmat(Phi2, RHmat(Phi1, Prop, p2, p3), p3, n1), n1, n2);
-lossProp = softmaxloss(eev(PhiProp, Z, ng), zeta);
+lossProp = softmaxloss(eev(PhiProp, Z, ng), zeta, ll);
 
-Qdelta = as_scalar(lossX + accu(GradlossX % (Prop - X)) + 1 / (2 * delta) * sum_square(Prop - X) + 0*penX);
+Qdelta = as_scalar(lossX + accu(GradlossX % (Prop - X)) + 1 / (2 * delta) * sum_square(Prop - X) + 0 * penX);
 penProp = l1penalty(wGamma, Prop);
 
-if(lossProp + 0*penProp <= Qdelta + 0.0000001){ //need to add a little ??
+if(lossProp + 0 * penProp <= Qdelta + 0.0000001){ //need to add a little ??
 
 break;
 
@@ -327,7 +345,7 @@ if(BT(j, k) == btmax){Stopbt = 1;}
 
 Prop = prox_l1(X - delta * GradlossX, delta * wGamma);
 PhiProp = RHmat(Phi3, RHmat(Phi2, RHmat(Phi1, Prop, p2, p3), p3, n1), n1, n2);
-lossProp = softmaxloss(eev(PhiProp, Z, ng), zeta);
+lossProp = softmaxloss(eev(PhiProp, Z, ng), zeta, ll);
 
 }
 

@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // pga
-Rcpp::List pga(arma::mat Phi1, arma::mat Phi2, arma::mat Phi3, Rcpp::NumericVector resp, std::string penalty, double zeta, double c, arma::vec lambda, int nlambda, int makelamb, double lambdaminratio, arma::mat penaltyfactor, double reltol, int maxiter, int steps, int btmax, double Delta0, double nu, int alg);
-RcppExport SEXP SMMA_pga(SEXP Phi1SEXP, SEXP Phi2SEXP, SEXP Phi3SEXP, SEXP respSEXP, SEXP penaltySEXP, SEXP zetaSEXP, SEXP cSEXP, SEXP lambdaSEXP, SEXP nlambdaSEXP, SEXP makelambSEXP, SEXP lambdaminratioSEXP, SEXP penaltyfactorSEXP, SEXP reltolSEXP, SEXP maxiterSEXP, SEXP stepsSEXP, SEXP btmaxSEXP, SEXP Delta0SEXP, SEXP nuSEXP, SEXP algSEXP) {
+Rcpp::List pga(arma::mat Phi1, arma::mat Phi2, arma::mat Phi3, Rcpp::NumericVector resp, std::string penalty, double zeta, double c, arma::vec lambda, int nlambda, int makelamb, double lambdaminratio, arma::mat penaltyfactor, double reltol, int maxiter, int steps, int btmax, double Delta0, double nu, int alg, int ll);
+RcppExport SEXP SMMA_pga(SEXP Phi1SEXP, SEXP Phi2SEXP, SEXP Phi3SEXP, SEXP respSEXP, SEXP penaltySEXP, SEXP zetaSEXP, SEXP cSEXP, SEXP lambdaSEXP, SEXP nlambdaSEXP, SEXP makelambSEXP, SEXP lambdaminratioSEXP, SEXP penaltyfactorSEXP, SEXP reltolSEXP, SEXP maxiterSEXP, SEXP stepsSEXP, SEXP btmaxSEXP, SEXP Delta0SEXP, SEXP nuSEXP, SEXP algSEXP, SEXP llSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -31,7 +31,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type Delta0(Delta0SEXP);
     Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
     Rcpp::traits::input_parameter< int >::type alg(algSEXP);
-    rcpp_result_gen = Rcpp::wrap(pga(Phi1, Phi2, Phi3, resp, penalty, zeta, c, lambda, nlambda, makelamb, lambdaminratio, penaltyfactor, reltol, maxiter, steps, btmax, Delta0, nu, alg));
+    Rcpp::traits::input_parameter< int >::type ll(llSEXP);
+    rcpp_result_gen = Rcpp::wrap(pga(Phi1, Phi2, Phi3, resp, penalty, zeta, c, lambda, nlambda, makelamb, lambdaminratio, penaltyfactor, reltol, maxiter, steps, btmax, Delta0, nu, alg, ll));
     return rcpp_result_gen;
 END_RCPP
 }

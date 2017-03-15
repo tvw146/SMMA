@@ -19,7 +19,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
-#' @name pga
+#' @name SMMA_internal
 #' @aliases pga
 #' @title Internal SMMA Functions
 #' @description  Internal SMMA functions.

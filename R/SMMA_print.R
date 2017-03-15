@@ -53,7 +53,7 @@
 #' }
 #' 
 #' @method print SMMA
-#' @S3method print SMMA
+# @S3method print SMMA
 #' @author Adam Lund
 #' @export
  

@@ -78,7 +78,7 @@
 #' 
 #' @author Adam Lund
 #' @method predict SMMA
-#' @S3method predict SMMA
+# @S3method predict SMMA
 #' @export
 predict.SMMA <- function(object, x = NULL, X = NULL, ...) {
   

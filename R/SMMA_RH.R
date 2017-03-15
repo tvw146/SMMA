@@ -59,6 +59,7 @@ Rotate <- function(A){
 #' smoothing. \emph{Journal of the Royal Statistical Society. Series B}. 68, 259-280.
 #' 
 #' @author Adam Lund
+#' @export
 
 RH <- function(M, A){
   

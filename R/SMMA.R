@@ -42,7 +42,8 @@
 #'             c = 0.001,
 #'             Delta0 = 1,
 #'             nu = 1,
-#'             alg = c("npg", "mfista"))
+#'             alg = c("npg", "mfista"),
+#'             log = TRUE)
 #'            
 #' @param X A list containing the Kronecker components (2 or 3) of the Kronecker design matrix.
 #'  These are  matrices of sizes \eqn{n_i \times p_i}.
@@ -126,22 +127,21 @@
 #' n1 <- 65; n2 <- 26; n3 <- 13; p1 <- 13; p2 <- 5; p3 <- 4
 #' 
 #' ##marginal design matrices (Kronecker components)
-#' X1 <- matrix(rnorm(n1 * p1, 0, 0.5), n1, p1) 
-#' X2 <- matrix(rnorm(n2 * p2, 0, 0.5), n2, p2) 
-#' X3 <- matrix(rnorm(n3 * p3, 0, 0.5), n3, p3) 
+#' X1 <- matrix(rnorm(n1 * p1), n1, p1) 
+#' X2 <- matrix(rnorm(n2 * p2), n2, p2) 
+#' X3 <- matrix(rnorm(n3 * p3), n3, p3) 
 #' X <- list(X1, X2, X3)
 #' 
 #' component <- rbinom(p1 * p2 * p3, 1, 0.1) 
-#' Beta1 <- array(rnorm(p1 * p2 * p3, 0, .1) + component, c(p1 , p2, p3))
-#' Beta2 <- array(rnorm(p1 * p2 * p3, 0, .1) + component, c(p1 , p2, p3))
+#' Beta1 <- array(rnorm(p1 * p2 * p3, 0, 0.1) + component, c(p1 , p2, p3))
+#' Beta2 <- array(rnorm(p1 * p2 * p3, 0, 0.1) + component, c(p1 , p2, p3))
 #' mu1 <- RH(X3, RH(X2, RH(X1, Beta1)))
 #' mu2 <- RH(X3, RH(X2, RH(X1, Beta2)))
-#' Y1 <- array(rnorm(n1 * n2 * n3, mu1), dim = c(n1, n2, n3))
-#' Y2 <- array(rnorm(n1 * n2 * n3, mu2), dim = c(n1, n2, n3))
-#' 
+#' Y1 <- array(rnorm(n1 * n2 * n3), dim = c(n1, n2, n3)) + mu1
+#' Y2 <- array(rnorm(n1 * n2 * n3), dim = c(n1, n2, n3)) + mu2
 #' Y <- array(NA, c(dim(Y1), 2))
 #' Y[,,, 1] <- Y1; Y[,,, 2] <- Y2;
-#' 
+#'
 #' fit <- softmaximin(X, Y, penalty = "lasso", alg = "npg")
 #' Betafit <- fit$coef
 #' 
@@ -153,6 +153,8 @@
 #' }
 
 #' @export
+#' @useDynLib SMMA, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 softmaximin <-function(X,
                Y, 
                penalty = c("lasso", "scad"),
@@ -168,7 +170,8 @@ softmaximin <-function(X,
                c = 0.001,
                Delta0 = 1,
                nu = 1,
-               alg = c("npg", "mfista")) {
+               alg = c("npg", "mfista"),
+               log = TRUE) {
   
 ##get dimensions of problem
 dimglam <- length(X)
@@ -203,6 +206,10 @@ for(i in 1:G){Z[, , i] <- matrix(Y[, , , i], n1, n2 * n3)}
 if(sum(alg == c("npg", "mfista")) != 1){stop(paste("algorithm must be correctly specified"))}
 
 if(alg == "npg"){npg <- 1}else{npg <- 0}
+
+####check on loss type
+if(log == TRUE){ll <- 1}else{ll <- 0}
+
 
 ####check on constants
 if(c <= 0){stop(paste("c must be strictly positive"))}
@@ -283,7 +290,8 @@ res <- pga(X1, X2, X3,
            btmax,
            Delta0,
            nu,
-           npg)
+           npg,
+           ll)
 
 ####checks
 if(res$Stops[2] == 1){
