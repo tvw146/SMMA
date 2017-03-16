@@ -62,6 +62,8 @@ Automatically set to 1 when \code{penalty = "lasso"}.}
 \item{nu}{constant used to control the stepsize. Must be positive. A small value gives a big stepsize. Default is \code{nu = 1}.}
 
 \item{alg}{string indicating which algortihm to use. Possible values are \code{"npg", "mfista"}.}
+
+\item{log}{logical varivbale indicating wheter to use log-loss to or not.  TRUE is default.}
 }
 \value{
 An object with S3 Class "SMMA". 
@@ -108,7 +110,7 @@ where \eqn{J} is a penalty function and  \eqn{\lambda\geq0} a penalty parameter.
         
 Using only the marginal matrices \eqn{X_1,X_2,\ldots}, the function \code{softmaximin} 
 solves an approximation to the problem above, using a softmax type loss function, given as
-\deqn{\min_{\beta}\sum_{g=1}^G \exp(-\zeta \hat V_g(\beta)) + \lambda J (\beta),} 
+\deqn{\min_{\beta}\log(\sum_{g=1}^G \exp(-\zeta \hat V_g(\beta))) + \lambda J (\beta),} 
 for a sequence of penalty parameters \eqn{\lambda>0}. The underlying algorithm is based on an  
 proximal gradient method. We note that if \eqn{J} is not  convex, as with the SCAD penalty,
 we use the multiple step adaptive lasso procedure to loop over the inner proximal algorithm, see \cite{Lund et al., 2017} for more details.
