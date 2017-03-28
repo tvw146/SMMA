@@ -72,14 +72,12 @@ return eevar;
 //////////////////// softmax loss
 double softmaxloss(arma::vec w, double c, int ll){
   // max(y,x)=k
-  //   log(e^(c(y- k))+e^(c(x- k)))+ck
-  // =log((e^(cy)+e^(cx))e^(- ck))+ck
-  // =log((e^(cy)+e^(cx))) - ck +ck  
+  //   log(e^(c(y- k))+e^(c(x- k))) =log((e^(cy)+e^(cx))e^(- ck)) =log((e^(cy)+e^(cx))) - ck   
 if(ll == 1){
   
 double k =  max(w);
 
-return log(accu(exp(-c * (w - k)))) - c * k; 
+return (log(accu(exp(-c * (w - k)))) - c * k) / c; 
 
 }else{
     
@@ -94,7 +92,7 @@ arma::mat gradloss(arma::cube const& PhitZ, arma::mat const& XtXb, arma::vec con
 arma::mat gradout(XtXb.n_rows, XtXb.n_cols);
 gradout.fill(0);
     
-if(ll == 1){
+if(ll == 1){// log(exp(-zeta*V)) /////////
       
 double  M = max(eev);
 double  m = min(eev);
@@ -104,9 +102,10 @@ if(abs(m) > abs(M)){k.fill(m);}else{k.fill(M);}///TOTOTOTOTOTODODODODODOD???????
 double tmp =  accu(exp(-a * (eev - k)));//ok???????
 for(int j = 0; j < PhitZ.n_slices; j++){gradout = exp(-a * (eev(j) - k(j))) * (XtXb - PhitZ.slice(j))  + gradout;}
       
-return 2 * a * gradout / (tmp * ng);
-      
-}else{
+//return 2 * a * gradout / (tmp * ng);
+return 2 * gradout / (tmp * ng);
+
+}else{// exp(-zeta*V) ///////////
       
 for(int j = 0; j < PhitZ.n_slices; j++){gradout = exp(-a * eev(j)) * (XtXb - PhitZ.slice(j)) + gradout;}
       
