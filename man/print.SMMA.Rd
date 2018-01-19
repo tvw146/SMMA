@@ -16,7 +16,7 @@ This function will print some information about the SMMA object.
 }
 \examples{
  
-\dontrun{
+
 ##size of example 
 n1 <- 65; n2 <- 26; n3 <- 13; p1 <- 13; p2 <- 5; p3 <- 4
 
@@ -39,10 +39,9 @@ Y[,,, 1] <- Y1; Y[,,, 2] <- Y2;
 
 fit <- softmaximin(X, Y, penalty = "lasso", alg = "npg")
 fit
-}
+
 
 }
 \author{
 Adam Lund
 }
-

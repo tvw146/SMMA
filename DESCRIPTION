@@ -1,12 +1,12 @@
 Package: SMMA
 Type: Package
-Title: Maximin Estimation for Large Scale Array Data
-Version: 1.0
-Date: 2017-02-04
+Title: Soft Maximin Estimation for Large Scale Array-Tensor Models
+Version: 1.0.2
+Date: 2018-01-18
 Author: Adam Lund
 Maintainer: Adam Lund <adam.lund@math.ku.dk>
-Description: Efficient design matrix free procedure for solving a Soft MaxiMin problem for  large scale Array models. Currently Lasso and SCAD penalized estimation is implemented.
-License: GPL-3
-Imports: Rcpp (>= 0.11.2)
+Description: Efficient design matrix free procedure for solving a soft maximin problem for  large scale array-tensor structured models. Currently Lasso and SCAD penalized estimation is implemented.
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.12.12)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

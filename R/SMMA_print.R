@@ -27,7 +27,7 @@
 #' @param ... ignored
 #' 
 #' @examples  
-#' \dontrun{
+#' 
 #' ##size of example 
 #' n1 <- 65; n2 <- 26; n3 <- 13; p1 <- 13; p2 <- 5; p3 <- 4
 #' 
@@ -50,7 +50,7 @@
 #' 
 #' fit <- softmaximin(X, Y, penalty = "lasso", alg = "npg")
 #' fit
-#' }
+#' 
 #' 
 #' @method print SMMA
 # @S3method print SMMA
